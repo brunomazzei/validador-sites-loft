@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Validação de Sites</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+    
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Montserrat', sans-serif;
       margin: 0;
       padding: 0;
       display: flex;
@@ -27,7 +29,7 @@
     }
 
     input {
-      width: 90%!important;
+      width: 90%;
       padding: 10px;
       margin-bottom: 10px;
       border: 1px solid #ddd;
@@ -36,7 +38,7 @@
 
     button {
       padding: 10px 20px;
-      background-color: #007bff;
+      background-color: #fc7c4c;
       color: white;
       border: none;
       border-radius: 4px;
@@ -45,7 +47,7 @@
     }
 
     button:hover {
-      background-color: #0056b3;
+      background-color: #f16c3c;
     }
 
     #result {
@@ -56,16 +58,31 @@
     .error {
       color: red;
     }
+
+    .result-with-logo img {
+      display: block;
+      margin: 10px auto;
+      width: 100px;
+      height: auto;
+    }
+
+    .note {
+      margin-top: 20px;
+      font-size: 0.85em;
+      color: #aaa;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Validação de Sites</h1>
-    <form id="site-form">
-      <input type="text" id="site-url" placeholder="Digite o link do site (http://...)" required>
+    <h1>Validador de Sites Loft</h1>
+    <form id="site-form" autocomplete="off">
+      <input type="text" id="site-url" placeholder="Digite o link do site" required autocomplete="off">
       <button type="submit">Verificar</button>
     </form>
     <div id="result"></div>
+    <div class="note">Esse validador não é capaz de validar 100% dos sites Loft Legado. Em caso de dúvida, entre em contato com o suporte.</div>
   </div>
 
   <script>
@@ -83,7 +100,13 @@
           : `http://${urlInput}`;
 
         // Valida e extrai o hostname
-        const hostname = new URL(urlWithScheme).hostname;
+        const urlObject = new URL(urlWithScheme);
+        let hostname = urlObject.hostname;
+
+        // Remove "www." se presente
+        if (hostname.startsWith('www.')) {
+          hostname = hostname.slice(4);
+        }
 
         // Faz a chamada para a API de DNS
         const response = await fetch(`https://dns.google/resolve?name=${hostname}&type=A`);
@@ -97,16 +120,24 @@
         // Pega o primeiro IP retornado
         const ip = data.Answer[0].data;
 
-        // Verifica o IP
+        // Determina o resultado e exibe a imagem apenas nos casos de "Legado" e "Novo Modelo GTM"
         if (ip === '38.210.213.189') {
-          resultDiv.textContent = 'Site Loft Legado';
+          resultDiv.innerHTML = `
+            <div class="result-with-logo">
+              <img src="https://logodownload.org/wp-content/uploads/2021/11/loft-logo-0.png" alt="Loft Logo">
+              <span>Site Loft Legado</span>
+            </div>`;
         } else if (ip === '35.227.239.5') {
-          resultDiv.textContent = 'Site Loft Novo Modelo GTM';
+          resultDiv.innerHTML = `
+            <div class="result-with-logo">
+              <img src="https://logodownload.org/wp-content/uploads/2021/11/loft-logo-0.png" alt="Loft Logo">
+              <span>Site Loft Novo Modelo GTM</span>
+            </div>`;
         } else {
-          resultDiv.textContent = 'Site Terceiro';
+          resultDiv.innerHTML = `<span>Site Terceiro</span>`;
         }
       } catch (error) {
-        resultDiv.innerHTML = `<span class="error">Erro: URL inválida ou problema ao processar.</span>`;
+        resultDiv.innerHTML = `<span class="error">Erro: URL inválida ou problema ao processar. Tente novamente.</span>`;
       }
     }
 
